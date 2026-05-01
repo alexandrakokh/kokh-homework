@@ -1,4 +1,6 @@
+from masks import get_mask_card_number, get_mask_account
 from datetime import datetime
+
 
 def mask_card_number(card_number: str) -> str:
     """Маскирует номер карты, оставляя видимыми первые 6 и последние 4 цифры."""
@@ -22,8 +24,20 @@ def mask_account_number(account_number: str) -> str:
     return f"**{account_number[-4:]}"
 
 def mask_account_card(input_string: str) -> str:
-    """Маскирует номер карты или счёта в строке."""
+    """
+    Маскирует номер карты или счёта в строке, используя функции из модуля masks.
 
+    Args:
+        input_string (str): Входная строка, содержащая тип (карта/счёт) и номер.
+
+
+    Returns:
+        str: Строка с замаскированным номером.
+
+    Raises:
+        ValueError: Если в строке не найден номер или он некорректен.
+    """
+    # Находим индекс первого цифрового символа
     first_digit_index = None
     for i, char in enumerate(input_string):
         if char.isdigit():
@@ -33,18 +47,21 @@ def mask_account_card(input_string: str) -> str:
     if first_digit_index is None:
         raise ValueError("В строке не найден номер карты или счёта")
 
-    # Выделяем тип (название) и номер
+
+    # Выделяем часть с типом (название) и номером
     type_part = input_string[:first_digit_index].strip()
     number_part = input_string[first_digit_index:].strip()
 
-    # Определяем тип и применяем соответствующую маскировку
-    # Проверяем различные варианты написания «счёт»
+    # Определяем тип и применяем соответствующую функцию маскировки
+    # Учитываем разные варианты написания «счёт»
     account_keywords = {'счёт', 'счет', 'account', 'account number'}
+
     if any(keyword in type_part.lower() for keyword in account_keywords):
-        masked_number = mask_account_number(number_part)
+        # Вызываем функцию маскировки счёта из модуля masks
+        masked_number = get_mask_account(number_part)
     else:
-        # Предполагаем, что всё остальное — это карты
-        masked_number = mask_card_number(number_part)
+        # Вызываем функцию маскировки карты из модуля masks
+        masked_number = get_mask_card_number(number_part)
 
     return f"{type_part} {masked_number}"
 
