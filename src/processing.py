@@ -7,7 +7,14 @@ def filter_by_state(
     state: str = 'EXECUTED'
 ) -> List[Dict[str, Any]]:
     """Фильтрует список словарей с данными о банковских операциях по значению ключа 'state'."""
-    return [transaction for transaction in transactions if transaction.get('state') == state]
+    if not isinstance(transactions, list):
+        raise TypeError("transactions должен быть списком")
+
+    return [
+        transaction
+        for transaction in transactions
+        if transaction.get('state') == state
+    ]
 
 
 def sort_by_date(
@@ -15,14 +22,17 @@ def sort_by_date(
     reverse: bool = True
 ) -> List[Dict[str, Any]]:
     """Сортирует список словарей с данными о банковских операциях по дате."""
-
+    if not isinstance(transactions, list):
+        raise TypeError("transactions должен быть списком")
 
     def parse_date(transaction: Dict[str, Any]) -> datetime:
         date_str = transaction['date']
         try:
             return datetime.fromisoformat(date_str)
         except ValueError as e:
-            raise ValueError(f"Неверный формат даты '{date_str}' в транзакции {transaction['id']}") from e
+            raise ValueError(
+                f"Неверный формат даты '{date_str}' в транзакции с id={transaction.get('id', 'unknown')}"
+            ) from e
 
     return sorted(transactions, key=parse_date, reverse=reverse)
 
