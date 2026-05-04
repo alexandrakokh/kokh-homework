@@ -1,5 +1,5 @@
 import pytest
-from widget import mask_account_card, get_date
+from src.widget import mask_account_card, get_date
 
 class TestMaskAccountCard:
     @pytest.mark.parametrize("input_string,expected_card", [
