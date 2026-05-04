@@ -8,8 +8,6 @@ class TestGetMaskCardNumber:
         ('1234567890123', '123456*****123'),
         ('1234567890123456789', '123456*********789'),
     ])
-
-
     def test_valid_card_numbers(self, card_input, expected):
         """Тестирование корректного маскирования номеров карт разной длины."""
         result = get_mask_card_number(card_input)
@@ -21,35 +19,42 @@ class TestGetMaskCardNumber:
         '123abc456def',  # содержит буквы
         '',  # пустая строка
     ])
-
-
     def test_invalid_card_numbers(self, invalid_input):
         """Тестирование обработки некорректных номеров карт."""
         with pytest.raises(ValueError):
             get_mask_card_number(invalid_input)
 
 
-
 class TestGetMaskAccount:
     @pytest.mark.parametrize("account_input,expected", [
-        ('12345678901234567890', '**7890'),
-        ('1234', '**1234'),
-        ('123', '**123'),  # короткий номер
+        ('12345678901234567890', '**7890'),  # длинный номер счёта
+        ('1234', '**1234'),  # короткий номер (4 цифры)
+        ('123', '**123'),  # очень короткий номер (3 цифры)
+        ('001234', '**1234'),  # номер с ведущими нулями
+        ('1', '**1'),  # минимальный номер (1 цифра)
+        ('12', '**12'),  # номер из 2 цифр
     ])
-
-
     def test_valid_account_numbers(self, account_input, expected):
-        """Тестирование корректного маскирования номеров счетов."""
+        """Тестирование корректного маскирования номеров счетов (включая граничные случаи)."""
         result = get_mask_account(account_input)
         assert result == expected
 
-
-    def test_non_digit_account(self, account_numbers):
+    @pytest.mark.parametrize("non_digit_input", [
+        '123abc',
+        'abc123',
+        '12a34',
+        '!@#$%',
+    ])
+    def test_non_digit_account(self, non_digit_input):
         """Тестирование обработки номеров счетов с нечисловыми символами."""
         with pytest.raises(ValueError):
-            get_mask_account(account_numbers['non_digits'])
+            get_mask_account(non_digit_input)
 
-    def test_empty_account(self, account_numbers):
-        """Тестирование пустого номера счёта."""
+    @pytest.mark.parametrize("empty_input", [
+        '',
+        None,
+    ])
+    def test_empty_account(self, empty_input):
+        """Тестирование пустого или None номера счёта."""
         with pytest.raises(ValueError):
-            get_mask_account(account_numbers['empty'])
+            get_mask_account(empty_input)
