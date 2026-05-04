@@ -10,23 +10,29 @@ def filter_by_state(
     if not isinstance(transactions, list):
         raise TypeError("transactions должен быть списком")
 
-    return [
-        transaction
-        for transaction in transactions
-        if transaction.get('state') == state
-    ]
+    filtered = []
+    for transaction in transactions:
+        if isinstance(transaction, dict) and 'state' in transaction:
+            if transaction['state'] == state:
+                filtered.append(transaction)
+    return filtered
 
 
 def sort_by_date(
     transactions: List[Dict[str, Any]],
-    reverse: bool = True
+    reverse: bool = False
 ) -> List[Dict[str, Any]]:
     """Сортирует список словарей с данными о банковских операциях по дате."""
     if not isinstance(transactions, list):
         raise TypeError("transactions должен быть списком")
 
+    if not transactions:
+        return []
+
     def parse_date(transaction: Dict[str, Any]) -> datetime:
-        date_str = transaction['date']
+        date_str = transaction.get('date')
+        if date_str is None:
+            raise ValueError(f"Отсутствует поле 'date' в транзакции с id={transaction.get('id', 'unknown')}")
         try:
             return datetime.fromisoformat(date_str)
         except ValueError as e:
@@ -34,27 +40,15 @@ def sort_by_date(
                 f"Неверный формат даты '{date_str}' в транзакции с id={transaction.get('id', 'unknown')}"
             ) from e
 
-    return sorted(transactions, key=parse_date, reverse=reverse)
+    # Добавляем индекс исходного положения для сохранения порядка при одинаковых датах
+    indexed_transactions = [(i, transaction) for i, transaction in enumerate(transactions)]
 
+    # Сортируем только по дате — стабильность сортировки гарантирует сохранение порядка для равных дат
+    sorted_indexed = sorted(
+        indexed_transactions,
+        key=lambda x: parse_date(x[1]),
+        reverse=reverse
+    )
 
-# Примеры использования функций
-if __name__ == "__main__":
-    # Пример данных для тестирования
-    sample_data = [
-        {'id': 41428829, 'state': 'EXECUTED', 'date': '2019-07-03T18:35:29.512364'},
-        {'id': 939719570, 'state': 'EXECUTED', 'date': '2018-06-30T02:08:58.425572'},
-        {'id': 594226727, 'state': 'CANCELED', 'date': '2018-09-12T21:27:25.241689'},
-        {'id': 615064591, 'state': 'CANCELED', 'date': '2018-10-14T08:21:33.419441'}
-    ]
-
-    print("Тестирование filter_by_state:")
-    print("По умолчанию (EXECUTED):")
-    print(filter_by_state(sample_data))
-    print("\nCANCELED:")
-    print(filter_by_state(sample_data, 'CANCELED'))
-
-    print("\nТестирование sort_by_date:")
-    print("Сортировка по убыванию:")
-    print(sort_by_date(sample_data))
-    print("\nСортировка по возрастанию:")
-    print(sort_by_date(sample_data, reverse=False))
+    # Извлекаем только транзакции, отбрасывая индексы
+    return [transaction for _, transaction in sorted_indexed]
