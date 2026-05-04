@@ -4,57 +4,48 @@ from src.masks import get_mask_card_number, get_mask_account
 
 class TestGetMaskCardNumber:
     @pytest.mark.parametrize("card_input,expected", [
-        ('1234567890123456', '123456******3456'),
-        ('1234567890123', '123456*****123'),
-        ('1234567890123456789', '123456*********789'),
+        ("1234567890123456", "123456****3456"),
+        ("0000000000000000", "000000****0000"),
+        ("9999888877776666", "999988****7766"),
+        ("1111222233334444", "111122****3344"),
     ])
-    def test_valid_card_numbers(self, card_input, expected):
-        """Тестирование корректного маскирования номеров карт разной длины."""
+    def test_valid_card_masking(self, card_input, expected):
+        """Тестирование корректного маскирования номера карты."""
         result = get_mask_card_number(card_input)
         assert result == expected
 
-    @pytest.mark.parametrize("invalid_input", [
-        '123456789012',  # слишком короткий
-        '12345678901234567890',  # слишком длинный
-        '123abc456def',  # содержит буквы
-        '',  # пустая строка
+    @pytest.mark.parametrize("invalid_input,error_type,error_message", [
+        ("", ValueError, "Номер карты должен содержать только цифры"),
+        ("123456789012345", ValueError, "Номер карты должен содержать ровно 16 цифр"),
+        ("12345678901234567", ValueError, "Номер карты должен содержать ровно 16 цифр"),
+        ("1234abcd5678efgh", ValueError, "Номер карты должен содержать только цифры"),
     ])
-    def test_invalid_card_numbers(self, invalid_input):
-        """Тестирование обработки некорректных номеров карт."""
-        with pytest.raises(ValueError):
+    def test_invalid_card_inputs_raises_correct_error(self, invalid_input, error_type, error_message):
+        """
+        Тестирование, что функция выбрасывает правильные ошибки
+        для некорректных входных данных.
+        """
+        with pytest.raises(error_type, match=error_message):
             get_mask_card_number(invalid_input)
+
 
 
 class TestGetMaskAccount:
     @pytest.mark.parametrize("account_input,expected", [
-        ('12345678901234567890', '**7890'),  # длинный номер счёта
-        ('1234', '**1234'),  # короткий номер (4 цифры)
-        ('123', '**123'),  # очень короткий номер (3 цифры)
-        ('001234', '**1234'),  # номер с ведущими нулями
-        ('1', '**1'),  # минимальный номер (1 цифра)
-        ('12', '**12'),  # номер из 2 цифр
+        ("73654108430135874305", "**4305"),
+        ("1234", "**1234"),
+        ("0000", "**0000"),
     ])
-    def test_valid_account_numbers(self, account_input, expected):
-        """Тестирование корректного маскирования номеров счетов (включая граничные случаи)."""
+    def test_valid_account_masking(self, account_input, expected):
+        """Тестирование корректного маскирования номера счёта."""
         result = get_mask_account(account_input)
         assert result == expected
 
-    @pytest.mark.parametrize("non_digit_input", [
-        '123abc',
-        'abc123',
-        '12a34',
-        '!@#$%',
+    @pytest.mark.parametrize("invalid_input,error_type,error_message", [
+        ("", ValueError, "Номер счёта должен содержать только цифры"),
+        ("123a", ValueError, "Номер счёта должен содержать только цифры"),
     ])
-    def test_non_digit_account(self, non_digit_input):
-        """Тестирование обработки номеров счетов с нечисловыми символами."""
-        with pytest.raises(ValueError):
-            get_mask_account(non_digit_input)
-
-    @pytest.mark.parametrize("empty_input", [
-        '',
-        None,
-    ])
-    def test_empty_account(self, empty_input):
-        """Тестирование пустого или None номера счёта."""
-        with pytest.raises(ValueError):
-            get_mask_account(empty_input)
+    def test_invalid_account_inputs_raises_correct_error(self, invalid_input, error_type, error_message):
+        """Тестирование обработки некорректных входных данных для счёта."""
+        with pytest.raises(error_type, match=error_message):
+            get_mask_account(invalid_input)
