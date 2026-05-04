@@ -23,6 +23,19 @@ pip install -r requirements.txt
 
 Для получения дополнительной информации обратитесь к [документации](docs/README.md).
 
+## Тестирование
+
+1. src\__init__.py                      100%
+2. src\masks.py                         100%
+3. src\processing.py                    89%
+4. src\widget.py                        93%
+5. tests\__init__.py                    100%
+6. tests\conftest.py                    79%
+7. tests\test_masks.py                  100%
+8. tests\test_processing.py             100%
+9. tests\test_widget.py                 100%
+### TOTAL                            96%
+
 
 ## Лицензия:
 

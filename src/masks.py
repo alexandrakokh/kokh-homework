@@ -1,25 +1,29 @@
-def get_mask_card_number(card_number: str) -> str:
-    first_part = card_number[:6]
-    last_part = card_number[-4:]
-    masked = f"{first_part[:4]} {first_part[4:]}** **** {last_part}"
-    return masked
+def get_mask_card_number(card_input):
+    # Проверка на пустой ввод
+    if not card_input:
+        raise ValueError("Номер карты должен содержать только цифры")
+
+    # Проверка на наличие только цифр
+    if not card_input.isdigit():
+        raise ValueError("Номер карты должен содержать только цифры")
+
+    # Проверка длины
+    if len(card_input) != 16:
+        raise ValueError("Номер карты должен содержать ровно 16 цифр")
+
+    # Маскирование: первые 6 цифр + **** + 3-я/4-я с конца + последние 2
+    first_part = card_input[:6]
+    middle_part = card_input[-4:-2]  # 3-я и 4-я цифры с конца
+    last_part = card_input[-2:]       # Последние 2 цифры
+
+    return f"{first_part}****{middle_part}{last_part}"
+
 
 
 def get_mask_account(account_number: str) -> str:
-    last_four = account_number[-4:]
-    masked = f"**{last_four}"
-    return masked
-
-
-if __name__ == "__main__":
-    # Пример для карты
-    card = "7000792289606361"
-    print(f"{card}")
-    print(f"{get_mask_card_number(card)}")
-
-    print()
-
-    # Пример для счёта
-    account = "73654108430135874305"
-    print(f"{account}")
-    print(f"{get_mask_account(account)}")
+    """Маскирует номер счёта: показывает только последние 4 цифры."""
+    if not account_number:
+        raise ValueError("Номер счёта должен содержать только цифры")
+    if not account_number.isdigit():
+        raise ValueError("Номер счёта должен содержать только цифры")
+    return "**" + account_number[-4:]

@@ -3,7 +3,7 @@ name = "homework"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "Your Name",email = "you@example.com"}
+    {name = "Alexandra Kokh",email = "plahotnikova.al@gmail.com"}
 ]
 requires-python = ">=3.14"
 dependencies = [
@@ -20,6 +20,10 @@ lint = [
     "mypy (>=1.20.2,<2.0.0)",
     "black (>=26.3.1,<27.0.0)",
     "isort (>=8.0.1,<9.0.0)"
+]
+dev = [
+    "pytest (>=9.0.3,<10.0.0)",
+    "pytest-cov (>=7.1.0,<8.0.0)"
 ]
 
 [tool.black]
