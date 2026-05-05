@@ -1,27 +1,25 @@
 def filter_by_currency(transactions, currency_code):
     """Фильтрует транзакции по коду валюты."""
+    if transactions is None:
+        return
+
     for transaction in transactions:
-        # Проверяем, что в транзакции есть поле operationAmount,
-        # а внутри него — currency и code
-        if (
-            'operationAmount' in transaction
-            and 'currency' in transaction['operationAmount']
-            and 'code' in transaction['operationAmount']['currency']
-            and transaction['operationAmount']['currency']['code'] == currency_code
-        ):
-            yield transaction
+        try:
+            if (transaction.get('operationAmount', {})
+                    .get('currency', {})
+                    .get('code') == currency_code):
+                yield transaction
+        except (AttributeError, TypeError):
+            continue
 
 
 def transaction_descriptions(transactions):
     """Генератор, который возвращает описания транзакций по очереди."""
-    for transaction in transactions:
-        # Проверяем, что в транзакции есть поле description
-        if 'description' in transaction:
-            yield transaction['description']
-        else:
-            # Если описания нет, возвращаем пустую строку или альтернативное значение
-            yield ''
+    if transactions is None:
+        return
 
+    for transaction in transactions:
+        yield transaction.get('description', '')
 
 def card_number_generator(start, end):
     """Генератор номеров банковских карт в формате XXXX XXXX XXXX XXXX."""
