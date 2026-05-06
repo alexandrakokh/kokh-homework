@@ -28,16 +28,18 @@ pip install -r requirements.txt
 ## Тестирование
 
 1. src\__init__.py   100%
-2. src\generators.py  93%
-3. src\masks.py      100%
-4. src\processing.py  89%
-5. src\widget.py      93%
-6. tests\__init__.py 100%
-7. tests\conftest.py  79%
-8. tests\test_generators.py 100%
-9. tests\test_masks.py 100%
-10. tests\test_processing.py 100%
-11. tests\test_widget.py  100%
+2. src\decorators.py 100%
+3. src\generators.py  93%
+4. src\masks.py      100%
+5. src\processing.py  89%
+6. src\widget.py      93%
+7. tests\__init__.py 100%
+8. tests\conftest.py  79%
+9. tests\test_decorators.py 97%
+10. tests\test_generators.py 100%
+11. tests\test_masks.py 100%
+12. tests\test_processing.py 100%
+13. tests\test_widget.py  100%
 ## TOTAL  97%
 
 
