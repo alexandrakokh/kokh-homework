@@ -1,14 +1,12 @@
-import os
-from typing import Dict
 import requests
 from dotenv import load_dotenv
-
+import os
+from typing import Dict
 
 load_dotenv()
 
-
-API_KEY = os.getenv('EXCHANGE_API_KEY')
-BASE_URL = 'https://api.apilayer.com/exchangerates_data/latest'  # исправляем протокол
+API_KEY = os.environ.get('EXCHANGE_API_KEY')
+BASE_URL = 'https://api.apilayer.com/exchangerates_data/latest'
 
 def convert_to_rubles(transaction: Dict) -> float:
     """
@@ -37,15 +35,13 @@ def convert_to_rubles(transaction: Dict) -> float:
 
 def _get_exchange_rate(base_currency: str) -> float | None:
     params = {'base': base_currency, 'symbols': 'RUB'}
-    # Исправляем заголовок: используем 'apikey' и подставляем реальный ключ
     headers = {'apikey': API_KEY}
 
     try:
         response = requests.get(BASE_URL, params=params, headers=headers, timeout=10)
-        response.raise_for_status()  # Выбросит ошибку, если HTTP статус 4xx или 5xx
+        response.raise_for_status()
         data = response.json()
         return float(data['rates']['RUB'])
-    except (requests.RequestException, KeyError, ValueError) as e:
-        # Дополнительно логируем ошибку для отладки
+    except Exception as e:  # Перехватываем ВСЕ исключения
         print(f"Ошибка получения курса для {base_currency}: {e}")
         return None
