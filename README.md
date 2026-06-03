@@ -20,6 +20,7 @@ pip install -r requirements.txt
 3. Отслеживайте свои банковские операции в режиме реального времени.
 4. Так же для эффективной работы с большими объемами данных транзакций реализована функция генерирования. 
 Эта функция позволяет финансовым аналитикам быстро и удобно находить нужную информацию о транзакциях и проводить анализ данных.
+5. Теперь можно использовать функционал конвертации валют.
 
 ## Документация
 
@@ -33,14 +34,17 @@ pip install -r requirements.txt
 4. src\masks.py      100%
 5. src\processing.py  89%
 6. src\widget.py      93%
-7. tests\__init__.py 100%
-8. tests\conftest.py  79%
+7. srс\utils.py	 	  79%
+8. srс\external_api.py 93%
+9. tests\conftest.py  79%
 9. tests\test_decorators.py 97%
 10. tests\test_generators.py 100%
 11. tests\test_masks.py 100%
 12. tests\test_processing.py 100%
 13. tests\test_widget.py  100%
-## TOTAL  97%
+14. tests\test_utils.py	  100%
+15. tests\test_external_api.py	 100%
+## TOTAL  96%
 
 
 
