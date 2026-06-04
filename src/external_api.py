@@ -1,11 +1,12 @@
 import requests
 import os
 from typing import Dict
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Загрузка переменных окружения
-os.environ.get('EXCHANGE_API_KEY')
-
-# URL для конвертации
+API_KEY = os.environ.get('EXCHANGE_API_KEY')
 BASE_URL = 'https://api.apilayer.com/exchangerates_data/convert'
 
 def convert_to_rubles(transaction: Dict) -> float:
@@ -18,7 +19,11 @@ def convert_to_rubles(transaction: Dict) -> float:
         float: Сумма в рублях.
     """
     amount = transaction.get('amount', 0.0)
-    currency = transaction.get('currency', 'RUB').upper()  # Приводим к верхнему регистру
+    currency = transaction.get('currency', 'RUB').upper()
+
+    # Проверка корректности суммы
+    if not isinstance(amount, (int, float)) or amount < 0:
+        raise ValueError(f"Некорректная сумма транзакции: {amount}")
 
     if currency == 'RUB':
         return float(amount)
@@ -28,26 +33,29 @@ def convert_to_rubles(transaction: Dict) -> float:
 
     try:
         rate = _get_exchange_rate(currency)
-        return float(amount * rate)
-    except Exception as e:
-        raise ConnectionError(f"Ошибка при конвертации {amount} {currency} в RUB: {e}")
-
+        converted_amount = float(amount * rate)
+        return converted_amount
+    except ConnectionError as e:
+        raise ConnectionError(f"Ошибка сети при конвертации {amount} {currency} в RUB: {e}")
+    except ValueError as e:
+        if "API key not found" in str(e):
+            raise ValueError("Не установлен API-ключ для конвертации валют")
+        else:
+            raise ValueError(f"Ошибка данных при конвертации {amount} {currency}: {e}")
 
 def _get_exchange_rate(base_currency: str) -> float:
-    """
-    Получает актуальный курс конвертации из API.
-    """
-    # Получаем ключ из окружения
-    api_key = os.getenv('EXCHANGE_API_KEY')
+    """Получает актуальный курс конвертации из API."""
+    # Считываем API‑ключ при каждом вызове
+    api_key = os.environ.get('EXCHANGE_API_KEY')
     if not api_key:
         raise ValueError("API key not found. Set environment variable 'EXCHANGE_API_KEY'.")
 
     params = {
         'from': base_currency,
         'to': 'RUB',
-        'amount': 1  # Берём 1 единицу, чтобы получить чистый курс
+        'amount': 1
     }
-    headers = {'apikey': api_key}
+    headers = {'apikey': api_key}  # Используем локальную переменную
 
     try:
         response = requests.get(
@@ -56,14 +64,14 @@ def _get_exchange_rate(base_currency: str) -> float:
             headers=headers,
             timeout=10
         )
-        response.raise_for_status()  # Бросает исключение при 4xx/5xx ошибках
+        response.raise_for_status()
 
         data = response.json()
         if data.get('success'):
-            return float(data['result'])  # Результат уже в рублях
+            return float(data['result'])
         else:
-            raise Exception(f"API error: {data.get('error', {}).get('info')}")
-
+            error_info = data.get('error', {}).get('info', 'Unknown error')
+            raise ValueError(f"API error: {error_info}")
     except requests.exceptions.RequestException as e:
         raise ConnectionError(f"Ошибка сети при запросе курса: {e}")
     except (KeyError, TypeError) as e:

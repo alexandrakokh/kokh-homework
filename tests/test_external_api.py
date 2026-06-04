@@ -2,6 +2,9 @@ import unittest
 from unittest.mock import patch, Mock
 import requests
 from src.external_api import convert_to_rubles, _get_exchange_rate
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class TestConvertToRubles(unittest.TestCase):
 
@@ -34,9 +37,23 @@ class TestConvertToRubles(unittest.TestCase):
             convert_to_rubles(transaction)
         self.assertIn("Неподдерживаемая валюта", str(context.exception))
 
-    @patch('src.external_api.os.getenv', return_value='test_api_key')
+    def test_invalid_amount_type(self):
+        """Тест для некорректного типа суммы."""
+        transaction = {'amount': 'invalid', 'currency': 'USD'}
+        with self.assertRaises(ValueError) as context:
+            convert_to_rubles(transaction)
+        self.assertIn("Некорректная сумма транзакции", str(context.exception))
+
+    def test_negative_amount(self):
+        """Тест для отрицательной суммы."""
+        transaction = {'amount': -100, 'currency': 'USD'}
+        with self.assertRaises(ValueError) as context:
+            convert_to_rubles(transaction)
+        self.assertIn("Некорректная сумма транзакции", str(context.exception))
+
+    @patch('src.external_api.os.environ.get', return_value='test_api_key')
     @patch('requests.get')
-    def test_successful_rate_fetch(self, mock_get, mock_os_getenv):
+    def test_successful_rate_fetch(self, mock_get, mock_os_environ_get):
         """Тест успешного получения курса из API."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -56,10 +73,11 @@ class TestConvertToRubles(unittest.TestCase):
         self.assertEqual(kwargs['params']['from'], 'USD')
         self.assertEqual(kwargs['params']['to'], 'RUB')
         self.assertEqual(kwargs['params']['amount'], 1)
+        self.assertEqual(kwargs['headers']['apikey'], 'test_api_key')
 
-    @patch('src.external_api.os.getenv', return_value='test_api_key')
+    @patch('src.external_api.os.environ.get', return_value='test_api_key')
     @patch('requests.get')
-    def test_api_error_response(self, mock_get, mock_os_getenv):
+    def test_api_error_response(self, mock_get, mock_os_environ_get):
         """Тест обработки ошибки от API."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -69,13 +87,13 @@ class TestConvertToRubles(unittest.TestCase):
         }
         mock_get.return_value = mock_response
 
-        with self.assertRaises(Exception) as context:
+        with self.assertRaises(ValueError) as context:
             _get_exchange_rate('USD')
         self.assertIn("API error", str(context.exception))
 
-    @patch('src.external_api.os.getenv', return_value='test_api_key')
+    @patch('src.external_api.os.environ.get', return_value='test_api_key')
     @patch('requests.get')
-    def test_network_error(self, mock_get, mock_os_getenv):
+    def test_network_error(self, mock_get, mock_os_environ_get):
         """Тест обработки сетевой ошибки."""
         mock_get.side_effect = requests.exceptions.RequestException('Connection failed')
 
@@ -83,9 +101,9 @@ class TestConvertToRubles(unittest.TestCase):
             _get_exchange_rate('USD')
         self.assertIn("Ошибка сети", str(context.exception))
 
-    @patch('src.external_api.os.getenv', return_value='test_api_key')
+    @patch('src.external_api.os.environ.get', return_value='test_api_key')
     @patch('requests.get')
-    def test_parsing_error(self, mock_get, mock_os_getenv):
+    def test_parsing_error(self, mock_get, mock_os_environ_get):
         """Тест обработки ошибки парсинга JSON."""
         mock_response = Mock()
         mock_response.status_code = 200
@@ -96,3 +114,10 @@ class TestConvertToRubles(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             _get_exchange_rate('USD')
         self.assertIn("Ошибка парсинга", str(context.exception))
+
+    @patch('src.external_api.os.environ.get', return_value=None)
+    def test_missing_api_key(self, mock_os_environ_get):
+        """Тест отсутствия API-ключа."""
+        with self.assertRaises(ValueError) as context:
+            _get_exchange_rate('USD')
+        self.assertIn("API key not found", str(context.exception))
