@@ -1,8 +1,9 @@
 import pytest
-from src.generators import filter_by_currency, transaction_descriptions, card_number_generator
+
+from src.generators import card_number_generator, filter_by_currency, transaction_descriptions
 
 
-#Фикстура с тестовыми данными транзакций
+# Фикстура с тестовыми данными транзакций
 @pytest.fixture
 def sample_transactions():
     return [
@@ -10,48 +11,31 @@ def sample_transactions():
             "id": 939719570,
             "state": "EXECUTED",
             "date": "2018-06-30T02:08:58.425572",
-            "operationAmount": {
-                "amount": "9824.07",
-                "currency": {
-                    "name": "USD",
-                    "code": "USD"
-                }
-            },
+            "operationAmount": {"amount": "9824.07", "currency": {"name": "USD", "code": "USD"}},
             "description": "Перевод организации",
             "from": "Счет 75106830613657916952",
-            "to": "Счет 11776614605963066702"
+            "to": "Счет 11776614605963066702",
         },
         {
             "id": 142264268,
             "state": "EXECUTED",
             "date": "2019-04-04T23:20:05.206878",
-            "operationAmount": {
-                "amount": "79114.93",
-                "currency": {
-                    "name": "USD",
-                    "code": "USD"
-                }
-            },
+            "operationAmount": {"amount": "79114.93", "currency": {"name": "USD", "code": "USD"}},
             "description": "Перевод со счета на счет",
             "from": "Счет 19708645243227258542",
-            "to": "Счет 75651667383060284188"
+            "to": "Счет 75651667383060284188",
         },
         {
             "id": 873106923,
             "state": "EXECUTED",
             "date": "2019-03-23T01:09:46.296404",
-            "operationAmount": {
-                "amount": "43318.34",
-                "currency": {
-                    "name": "руб.",
-                    "code": "RUB"
-                }
-            },
+            "operationAmount": {"amount": "43318.34", "currency": {"name": "руб.", "code": "RUB"}},
             "description": "Перевод со счета на счет",
             "from": "Счет 44812258784861134719",
-            "to": "Счет 74489636417521191160"
-        }
+            "to": "Счет 74489636417521191160",
+        },
     ]
+
 
 # Фикстура для транзакций без описания
 @pytest.fixture
@@ -59,9 +43,8 @@ def transactions_with_missing_description():
     return [
         {"id": 1, "description": "Первая транзакция"},
         {"id": 2},  # Нет поля description
-        {"id": 3, "description": "Третья транзакция"}
+        {"id": 3, "description": "Третья транзакция"},
     ]
-
 
 
 # Тесты для filter_by_currency
@@ -79,10 +62,7 @@ class TestFilterByCurrency:
         assert len(rub_transactions) == 1
         assert rub_transactions[0]["operationAmount"]["currency"]["code"] == "RUB"
 
-    @pytest.mark.parametrize("currency_code,expected_count", [
-        ("EUR", 0),
-        ("JPY", 0)
-    ])
+    @pytest.mark.parametrize("currency_code,expected_count", [("EUR", 0), ("JPY", 0)])
     def test_no_transactions_for_currency(self, sample_transactions, currency_code, expected_count):
         """Тест отсутствия транзакций для заданной валюты."""
         transactions = list(filter_by_currency(sample_transactions, currency_code))
@@ -98,7 +78,7 @@ class TestFilterByCurrency:
         incomplete_transactions = [
             {"id": 1},
             {"id": 2, "operationAmount": {}},
-            {"id": 3, "operationAmount": {"currency": {}}}
+            {"id": 3, "operationAmount": {"currency": {}}},
         ]
         result = list(filter_by_currency(incomplete_transactions, "USD"))
         assert result == []
@@ -107,7 +87,6 @@ class TestFilterByCurrency:
         """Тест обработки None вместо списка транзакций."""
         result = list(filter_by_currency(None, "USD"))
         assert result == []
-
 
 
 # Тесты для transaction_descriptions
@@ -135,13 +114,11 @@ class TestTransactionDescriptions:
         result = list(transaction_descriptions(None))
         assert result == []
 
-
     def test_single_transaction(self):
         """Тест с одной транзакцией."""
         single_transaction = [{"id": 1, "description": "Одиночная транзакция"}]
         result = list(transaction_descriptions(single_transaction))
         assert result == ["Одиночная транзакция"]
-
 
 
 # Тесты для card_number_generator
@@ -150,11 +127,7 @@ class TestCardNumberGenerator:
     def test_basic_range(self):
         """Тест генерации базового диапазона номеров карт."""
         cards = list(card_number_generator(1, 3))
-        expected = [
-            "0000 0000 0000 0001",
-            "0000 0000 0000 0002",
-            "0000 0000 0000 0003"
-        ]
+        expected = ["0000 0000 0000 0001", "0000 0000 0000 0002", "0000 0000 0000 0003"]
         assert cards == expected
 
     def test_formatting_correctness(self):
@@ -186,7 +159,7 @@ class TestCardNumberGenerator:
             "9999 9999 9999 9992",
             "9999 9999 9999 9993",
             "9999 9999 9999 9994",
-            "9999 9999 9999 9995"
+            "9999 9999 9999 9995",
         ]
         assert cards == expected
 
@@ -203,13 +176,16 @@ class TestCardNumberGenerator:
 # Тесты на проверку исключений для card_number_generator
 class TestCardNumberGeneratorExceptions:
 
-    @pytest.mark.parametrize("start,end,expected_exception,expected_message", [
-        (0, 5, ValueError, "Начальное значение должно быть не меньше 1"),
-        (1, 10000000000000000, ValueError, "Конечное значение не может превышать 9999999999999999"),
-        (5, 1, ValueError, "Начальное значение не может быть больше конечного"),
-        ("1", 5, TypeError, "Начальное и конечное значения должны быть целыми числами"),
-        (1, "5", TypeError, "Начальное и конечное значения должны быть целыми числами")
-    ])
+    @pytest.mark.parametrize(
+        "start,end,expected_exception,expected_message",
+        [
+            (0, 5, ValueError, "Начальное значение должно быть не меньше 1"),
+            (1, 10000000000000000, ValueError, "Конечное значение не может превышать 9999999999999999"),
+            (5, 1, ValueError, "Начальное значение не может быть больше конечного"),
+            ("1", 5, TypeError, "Начальное и конечное значения должны быть целыми числами"),
+            (1, "5", TypeError, "Начальное и конечное значения должны быть целыми числами"),
+        ],
+    )
     def test_invalid_parameters(self, start, end, expected_exception, expected_message):
         """Тест обработки некорректных параметров."""
         with pytest.raises(expected_exception) as exc_info:
@@ -232,7 +208,7 @@ class TestEdgeCases:
             {"id": 1, "operationAmount": {}},
             {"id": 2, "operationAmount": {"currency": {}}},
             {"id": 3, "operationAmount": {"currency": {"code": "USD"}}},
-            {"id": 4, "operationAmount": {"currency": {"code": "RUB"}}}
+            {"id": 4, "operationAmount": {"currency": {"code": "RUB"}}},
         ]
         usd_transactions = list(filter_by_currency(incomplete_transactions, "USD"))
         assert len(usd_transactions) == 1
@@ -244,7 +220,7 @@ class TestEdgeCases:
             {"id": 1, "description": "Транзакция 1"},
             {"id": 2, "description": ""},  # Пустое описание
             {"id": 3},  # Нет описания
-            {"id": 4, "description": "Транзакция 4"}
+            {"id": 4, "description": "Транзакция 4"},
         ]
         descriptions = list(transaction_descriptions(complex_transactions))
         expected = ["Транзакция 1", "", "", "Транзакция 4"]

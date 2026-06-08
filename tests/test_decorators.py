@@ -1,5 +1,7 @@
-import pytest
 import os
+
+import pytest
+
 from src.decorators import log
 
 
@@ -7,6 +9,7 @@ from src.decorators import log
 def cleanup_test_file(filename):
     if os.path.exists(filename):
         os.remove(filename)
+
 
 class TestLogDecorator:
     @pytest.fixture(autouse=True)
@@ -18,6 +21,7 @@ class TestLogDecorator:
 
     def test_successful_execution_console(self, capsys):
         """Тест успешного выполнения функции с логированием в консоль"""
+
         @log()
         def test_function(x, y):
             return x + y
@@ -34,11 +38,12 @@ class TestLogDecorator:
 
     def test_exception_handling_console(self, capsys):
         """Тест обработки исключения с логированием в консоль"""
+
         @log()
         def problematic_function(value):
             if value < 0:
                 raise ValueError("Negative value not allowed")
-            return value ** 2
+            return value**2
 
         with pytest.raises(ValueError, match="Negative value not allowed"):
             problematic_function(-5)
@@ -62,7 +67,7 @@ class TestLogDecorator:
         assert result == 7
 
         # Проверяем содержимое файла
-        with open(filename, 'r', encoding='utf-8') as f:
+        with open(filename, "r", encoding="utf-8") as f:
             content = f.read().strip()
         assert content == "another_test_function ok"
 
@@ -80,7 +85,7 @@ class TestLogDecorator:
             error_prone_function([])
 
         # Проверяем содержимое файла
-        with open(filename, 'r', encoding='utf-8') as f:
+        with open(filename, "r", encoding="utf-8") as f:
             content = f.read().strip()
 
         expected_error = "error_prone_function error: IndexError. Inputs: ([],), {}"
@@ -99,7 +104,7 @@ class TestLogDecorator:
         simple_function(10)
 
         # Проверяем содержимое файла — должно быть две записи
-        with open(filename, 'r', encoding='utf-8') as f:
+        with open(filename, "r", encoding="utf-8") as f:
             lines = f.readlines()
 
         assert len(lines) == 2
@@ -108,6 +113,7 @@ class TestLogDecorator:
 
     def test_kwargs_handling_console(self, capsys):
         """Тест обработки именованных аргументов с логированием в консоль"""
+
         @log()
         def function_with_kwargs(a, b=0, c=None):
             return f"{a}-{b}-{c}"
@@ -124,6 +130,7 @@ class TestLogDecorator:
 
     def test_mixed_args_exception_console(self, capsys):
         """Тест обработки смешанных аргументов при исключении в консоли"""
+
         @log()
         def mixed_args_function(x, y, z=0, debug=False):
             if debug:
@@ -135,14 +142,12 @@ class TestLogDecorator:
 
         # Проверяем вывод в консоль
         captured = capsys.readouterr()
-        expected_error = (
-            "mixed_args_function error: RuntimeError. "
-            "Inputs: (1, 2), {'z': 3, 'debug': True}"
-        )
+        expected_error = "mixed_args_function error: RuntimeError. " "Inputs: (1, 2), {'z': 3, 'debug': True}"
         assert expected_error in captured.out
 
     def test_no_arguments_function(self, capsys):
         """Тест функции без аргументов"""
+
         @log()
         def no_args_function():
             return "no args"

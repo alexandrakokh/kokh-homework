@@ -1,10 +1,11 @@
 import json
 import os
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 from logging_config import setup_logger
 
 # Создаём логгер для этого модуля
-logger = setup_logger('utils')
+logger = setup_logger("utils")
 
 
 def read_json_file(file_path: str) -> List[Dict[str, Any]]:
@@ -26,7 +27,7 @@ def read_json_file(file_path: str) -> List[Dict[str, Any]]:
 
     try:
         # Открываем файл и загружаем данные
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             data = json.load(file)
 
         # Проверяем, что данные — это список
