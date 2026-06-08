@@ -1,7 +1,7 @@
 import logging
 import os
 
-def create_module_logger(module_name):
+def setup_logger(module_name):
     """
     Создаёт логгер для указанного модуля с записью в файл.
 
