@@ -5,11 +5,9 @@ def filter_by_currency(transactions, currency_code):
 
     for transaction in transactions:
         try:
-            if (transaction.get('operationAmount', {})
-                    .get('currency', {})
-                    .get('code') == currency_code):
+            if transaction.get("operationAmount", {}).get("currency", {}).get("code") == currency_code:
                 yield transaction
-        except (AttributeError, TypeError):
+        except AttributeError, TypeError:
             continue
 
 
@@ -19,7 +17,8 @@ def transaction_descriptions(transactions):
         return
 
     for transaction in transactions:
-        yield transaction.get('description', '')
+        yield transaction.get("description", "")
+
 
 def card_number_generator(start, end):
     """Генератор номеров банковских карт в формате XXXX XXXX XXXX XXXX."""
@@ -39,5 +38,5 @@ def card_number_generator(start, end):
         # Преобразуем число в строку и дополняем нулями слева до 16 цифр
         num_str = str(num).zfill(16)
         # Разбиваем строку на блоки по 4 символа и соединяем пробелами
-        formatted_card = ' '.join([num_str[i:i + 4] for i in range(0, 16, 4)])
+        formatted_card = " ".join([num_str[i: i + 4] for i in range(0, 16, 4)])
         yield formatted_card

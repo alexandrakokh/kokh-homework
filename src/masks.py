@@ -1,7 +1,7 @@
 from logging_config import setup_logger
 
 # Создаём логгер для этого модуля
-logger = setup_logger('masks')
+logger = setup_logger("masks")
 
 
 def get_mask_card_number(card_input):
@@ -32,7 +32,7 @@ def get_mask_card_number(card_input):
     # Маскирование: первые 6 цифр + **** + 3-я/4-я с конца + последние 2
     first_part = card_input[:6]
     middle_part = card_input[-4:-2]  # 3-я и 4-я цифры с конца
-    last_part = card_input[-2:]      # Последние 2 цифры
+    last_part = card_input[-2:]  # Последние 2 цифры
 
     result = f"{first_part}****{middle_part}{last_part}"
     logger.info(f"Успешно замаскировали номер. Результат: {result}")
