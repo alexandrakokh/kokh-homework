@@ -7,7 +7,7 @@ def filter_by_currency(transactions, currency_code):
         try:
             if transaction.get("operationAmount", {}).get("currency", {}).get("code") == currency_code:
                 yield transaction
-        except AttributeError, TypeError:
+        except AttributeError as TypeError:
             continue
 
 
