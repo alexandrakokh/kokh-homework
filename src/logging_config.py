@@ -1,33 +1,26 @@
 import logging
 import os
+from pathlib import Path
 
 
-def setup_logger(module_name):
-    """
-    Создаёт логгер для указанного модуля с записью в файл.
+def setup_logger(module_name: str) -> logging.Logger:
+    # Создаем путь к директории логов
+    log_dir = Path("logs")
+    log_file_path = log_dir / f"{module_name}.log"
 
-    Args:
-        module_name (str): Название модуля
+    # Создаем директорию, если её не существует
+    if not log_dir.exists():
+        log_dir.mkdir(parents=True, exist_ok=True)
 
-    Returns:
-        logging.Logger: Настроенный логгер
-    """
-    # Получаем логгер с именем модуля
     logger = logging.getLogger(module_name)
-    logger.setLevel(logging.DEBUG)  # Записываем все уровни логирования
+    logger.setLevel(logging.DEBUG)
 
-    # Очищаем существующие обработчики, чтобы избежать дублирования
-    logger.handlers.clear()
-
-    # Путь к файлу лога: logs/module_name.log
-    log_file_path = os.path.join("logs", f"{module_name}.log")
-
-    # Создаём обработчик для записи в файл (режим 'w' — перезапись при каждом запуске)
+    # Создаем обработчик файла
     file_handler = logging.FileHandler(log_file_path, mode="w", encoding="utf-8")
     file_handler.setLevel(logging.DEBUG)
 
-    # Формат записи: время, модуль, уровень серьёзности, сообщение
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+    # Форматируем сообщения
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
 
     # Добавляем обработчик к логгеру
