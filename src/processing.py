@@ -1,5 +1,37 @@
+import re
 from datetime import datetime
 from typing import Any, Dict, List
+
+
+def process_bank_search(data: List[Dict[str, Any]], search: str) -> List[Dict[str, Any]]:
+    """
+    Возвращает список операций, в описании которых есть указанная строка.
+    Поиск регистронезависимый, используется библиотека re.
+    """
+    if not search:
+        return data
+
+    # Экранируем строку поиска, чтобы спецсимволы не ломали регулярное выражение
+    pattern = re.compile(re.escape(search), re.IGNORECASE)
+    return [op for op in data if pattern.search(op.get("description", ""))]
+
+
+def process_bank_operations(data: List[Dict[str, Any]], categories: List[str]) -> Dict[str, int]:
+    """
+    Возвращает словарь: {категория: количество операций}.
+    Категории ищутся в поле description (регистронезависимый поиск).
+    """
+    result = {cat: 0 for cat in categories}
+
+    for op in data:
+        desc = op.get("description", "").lower()
+        for cat in categories:
+            if cat.lower() in desc:
+                result[cat] += 1
+                # Если нужно считать операцию только в одной категории (первая совпавшая),
+                # раскомментируйте следующую строку:
+                # break
+    return result
 
 
 def filter_by_state(transactions: List[Dict[str, Any]], state: str = "EXECUTED") -> List[Dict[str, Any]]:
