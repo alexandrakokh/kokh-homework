@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 
 import pandas as pd
 
-from .logging_config import setup_logger as create_module_logger
+from src.logging_config import setup_logger as create_module_logger
 
 logger = create_module_logger("data_reader")
 
@@ -55,3 +55,21 @@ def read_transactions_from_json(file_path: str) -> List[Dict[str, Any]]:
     except Exception as e:
         logger.error(f"Ошибка при чтении JSON файла '{file_path}': {e}")
         return []
+
+
+def read_data(file_type: str, file_path: str) -> List[Dict[str, Any]]:
+    """
+    Универсальная функция для чтения данных.
+    file_type: 'json', 'csv', 'xlsx'
+    """
+    handlers = {
+        'json': read_transactions_from_json,
+        'csv': read_transactions_from_csv,
+        'xlsx': read_transactions_from_excel
+    }
+
+    if file_type not in handlers:
+        logger.error(f"Неподдерживаемый формат файла: {file_type}")
+        return []
+
+    return handlers[file_type](file_path)

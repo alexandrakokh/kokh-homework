@@ -1,8 +1,6 @@
 from unittest.mock import Mock, patch, mock_open
-import json
 import pytest
 import pandas as pd
-from tests.conftest import sample_transactions
 from src.data_reader import (
     read_transactions_from_csv,
     read_transactions_from_excel,
@@ -86,6 +84,7 @@ def test_read_json_invalid_format():
         result = read_transactions_from_json("invalid.json")
         assert result == []
 
+
 # Тесты на обработку ошибок
 @patch("src.data_reader.pd.read_csv")
 def test_read_csv_exception(mock_read_csv):
@@ -93,11 +92,13 @@ def test_read_csv_exception(mock_read_csv):
     result = read_transactions_from_csv("test.csv")
     assert result == []
 
+
 @patch("src.data_reader.pd.read_excel")
 def test_read_excel_exception(mock_read_excel):
     mock_read_excel.side_effect = Exception("Test exception")
     result = read_transactions_from_excel("test.xlsx")
     assert result == []
+
 
 @patch("builtins.open")
 def test_read_json_file_error(mock_open):
@@ -105,11 +106,13 @@ def test_read_json_file_error(mock_open):
     result = read_transactions_from_json("test.json")
     assert result == []
 
+
 @patch("builtins.open")
 def test_read_json_permission_error(mock_open):
     mock_open.side_effect = PermissionError("No permission")
     result = read_transactions_from_json("test.json")
     assert result == []
+
 
 @patch("src.data_reader.pd.read_csv")
 def test_csv_empty_result(mock_read_csv):
@@ -119,6 +122,7 @@ def test_csv_empty_result(mock_read_csv):
     result = read_transactions_from_csv("empty.csv")
     assert result == []
 
+
 @patch("src.data_reader.pd.read_excel")
 def test_excel_empty_result(mock_read_excel):
     mock_df = Mock()
@@ -127,17 +131,20 @@ def test_excel_empty_result(mock_read_excel):
     result = read_transactions_from_excel("empty.xlsx")
     assert result == []
 
+
 def test_json_empty_file(tmp_path):
     test_file = tmp_path / "empty.json"
     test_file.write_text("")
     result = read_transactions_from_json(str(test_file))
     assert result == []
 
+
 def test_json_corrupted_file(tmp_path):
     test_file = tmp_path / "corrupted.json"
     test_file.write_text("{corrupted_data")
     result = read_transactions_from_json(str(test_file))
     assert result == []
+
 
 @patch("src.data_reader.pd.read_csv")
 def test_csv_invalid_data(mock_read_csv):

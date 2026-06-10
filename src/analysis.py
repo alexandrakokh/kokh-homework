@@ -1,6 +1,7 @@
 from collections import Counter
 from typing import List, Dict
 
+
 def count_transaction_categories(
     transactions: List[Dict],
     categories: List[str]
