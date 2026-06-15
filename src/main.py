@@ -1,3 +1,5 @@
+from datetime import datetime
+from src.masks import get_mask_card_number
 from src.data_reader import read_data
 from src.processing import (
     process_bank_search,
@@ -10,12 +12,37 @@ ALLOWED_STATUSES = {"EXECUTED", "CANCELED", "PENDING"}
 
 
 def format_transaction(op: Dict) -> str:
-    """Форматирует одну транзакцию для вывода."""
-    date = op.get("date", "Unknown")
-    desc = op.get("description", "")
+    """Форматирует одну транзакцию для вывода (с маской и датой)."""
+
+    # 1. Формируем дату
+    date_iso = op.get("date")
+    try:
+        parsed_date = datetime.fromisoformat(date_iso)
+        date_formatted = parsed_date.strftime("%d.%m.%Y")
+    except (ValueError, TypeError):
+        date_formatted = "Неизвестная дата"
+
+    # 2. Описание
+    desc = op.get("description", "Неизвестно")
+
+    # 3. Маскируем номера
+    from_number = op.get("from")
+    to_number = op.get("to")
+
+    from_masked = get_mask_card_number(from_number) if from_number else "Неизвестно"
+    to_masked = get_mask_card_number(to_number) if to_number else "Неизвестно"
+
+    # 4. Сумма и валюта
     amount = op.get("amount", 0)
-    currency = op.get("currency", "RUB")
-    return f"{date} {desc}\nСумма: {amount} {currency}"
+    currency = op.get("currency", {}).get("name", "RUB")
+
+    # 5. Собираем итоговую строку
+    result = (
+        f"{date_formatted} {desc}\n"
+        f"{from_masked} -> {to_masked}\n"
+        f"Сумма: {amount} {currency}"
+    )
+    return result
 
 
 def main():
@@ -48,7 +75,10 @@ def main():
 
     # 1. Загрузка данных (используем ваш data_reader)
     data = read_data(file_type, file_path)
-    if not data:
+
+    # ПРОВЕРКА НА ОШИБКУ ЗАГРУЗКИ (None)
+    # Если read_data вернула None — печатаем ошибку и завершаем работу
+    if data is None:
         print("Программа: Не удалось загрузить данные. Завершение работы.")
         return
 
@@ -75,7 +105,14 @@ def main():
     # 4. Только рублевые транзакции
     ruble_choice = input('Программа: Выводить только рублевые транзакции? Да/Нет\nПользователь: ').strip().lower()
     if ruble_choice in ['да', 'yes']:
-        data = [op for op in data if op.get("currency", "").upper() == "RUB"]
+        filtered_data = []
+        for op in data:
+            currency_info = op.get("currency", {})
+            # Проверяем, есть ли ключ 'code' и равен ли он 'RUB'
+            if isinstance(currency_info, dict) and currency_info.get("code") == "RUB":
+                filtered_data.append(op)
+        data = filtered_data
+        print("Программа: Отфильтрованы только рублевые операции.")
 
     # 5. Поиск по описанию (используем process_bank_search из processing.py)
     search_choice = input(
@@ -87,6 +124,8 @@ def main():
 
     # 6. Вывод
     print("\nПрограмма: Распечатываю итоговый список транзакций...")
+
+    # ПРОВЕРКА НА ПУСТОЙ СПИСОК (данные загружены успешно, но список пуст)
     if not data:
         print("Программа: Не найдено ни одной транзакции, подходящей под ваши условия фильтрации")
     else:
