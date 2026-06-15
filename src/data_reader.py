@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 from typing import Any, Dict, List
 
@@ -57,11 +58,17 @@ def read_transactions_from_json(file_path: str) -> List[Dict[str, Any]]:
         return []
 
 
-def read_data(file_type: str, file_path: str) -> List[Dict[str, Any]]:
+def read_data(file_type: str, file_name: str) -> List[Dict[str, Any]]:
     """
     Универсальная функция для чтения данных.
     file_type: 'json', 'csv', 'xlsx'
+    file_name: имя файла (например, 'transactions.json')
     """
+    # Строим путь относительно папки src
+    current_dir = Path(__file__).parent  # Папка, где лежит data_reader.py (src)
+    data_dir = current_dir.parent / "data"  # Поднимаемся в корень и идем в data
+    file_path = data_dir / file_name  # Собираем полный путь
+
     handlers = {
         'json': read_transactions_from_json,
         'csv': read_transactions_from_csv,
@@ -72,4 +79,4 @@ def read_data(file_type: str, file_path: str) -> List[Dict[str, Any]]:
         logger.error(f"Неподдерживаемый формат файла: {file_type}")
         return []
 
-    return handlers[file_type](file_path)
+    return handlers[file_type](str(file_path))  # Передаем строковый путь в обработчики
