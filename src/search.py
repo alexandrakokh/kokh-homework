@@ -2,7 +2,7 @@ import re
 from typing import List, Dict
 
 
-def search_transactions_by_description(
+def process_bank_search(
     transactions: List[Dict],
     search_string: str
 ) -> List[Dict]:
