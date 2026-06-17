@@ -15,13 +15,16 @@ def convert_to_rubles(transaction: Dict) -> float:
     """
     Конвертирует сумму транзакции в рубли.
     Args:
-        transaction (Dict): Словарь с данными о транзакции, должен содержать ключи
-            'amount' и 'currency'.
+        transaction (Dict): Словарь с данными о транзакции, должен содержать ключ 'operationAmount'.
     Returns:
         float: Сумма в рублях.
     """
-    amount = transaction.get("amount", 0.0)
-    currency = transaction.get("currency", "RUB").upper()
+    # Шаг 1: Получаем вложенный словарь с суммой и валютой
+    operation_amount = transaction.get("operationAmount", {})
+
+    # Шаг 2: Извлекаем сумму и валюту из вложенного словаря
+    amount = operation_amount.get("amount", 0.0)
+    currency = operation_amount.get("currency", {}).get("name", "RUB").upper()
 
     # Проверка корректности суммы
     if not isinstance(amount, (int, float)) or amount < 0:
