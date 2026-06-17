@@ -78,47 +78,44 @@ class TestCategoryCounting:
     def test_count_categories_basic(self):
         """Базовый тест: подсчет разных категорий."""
         transactions = [
-            {'description': 'Покупка продуктов в магазине'},
-            {'description': 'Оплата бензина на АЗС'},
-            {'description': 'Перевод другу'},
-            {'description': 'Еще одна покупка продуктов'}
+            {"description": "Покупка продуктов в магазине"},
+            {"description": "Оплата бензина на АЗС"},
+            {"description": "Перевод другу"},
+            {"description": "Еще одна покупка продуктов"},
         ]
-        categories = ['продукты', 'бензин', 'переводы']
+        categories = ["продукты", "бензин", "переводы"]
 
         result = process_bank_operations(transactions, categories)
 
-        assert result['продукты'] == 2
-        assert result['бензин'] == 1
-        assert result['переводы'] == 1
+        assert result["продукты"] == 2
+        assert result["бензин"] == 1
+        assert result["переводы"] == 1
 
     def test_count_categories_case_insensitive(self):
         """Тест: регистр не важен."""
-        transactions = [
-            {'description': 'ПОКУПКА ПРОДУКТОВ'},
-            {'description': 'оплата Бензина'}
-        ]
-        categories = ['Продукты', 'Бензин']
+        transactions = [{"description": "ПОКУПКА ПРОДУКТОВ"}, {"description": "оплата Бензина"}]
+        categories = ["Продукты", "Бензин"]
 
         result = process_bank_operations(transactions, categories)
 
-        assert result['Продукты'] == 1
-        assert result['Бензин'] == 1
+        assert result["Продукты"] == 1
+        assert result["Бензин"] == 1
 
     def test_count_categories_missing_category(self):
         """Тест: если категория не найдена, возвращается 0."""
-        transactions = [{'description': 'Покупка еды'}]
-        categories = ['еда', 'одежда']  # 'одежда' не встретится
+        transactions = [{"description": "Покупка еды"}]
+        categories = ["еда", "одежда"]  # 'одежда' не встретится
 
         result = process_bank_operations(transactions, categories)
 
-        assert result['еда'] == 1
-        assert result['одежда'] == 0
+        assert result["еда"] == 1
+        assert result["одежда"] == 0
 
     def test_count_categories_empty_list(self):
         """Тест: пустой список транзакций."""
         transactions = []
-        categories = ['продукты', 'бензин']
+        categories = ["продукты", "бензин"]
 
         result = process_bank_operations(transactions, categories)
 
-        assert result == {'продукты': 0, 'бензин': 0}
+        assert result == {"продукты": 0, "бензин": 0}

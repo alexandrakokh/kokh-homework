@@ -14,7 +14,7 @@ class TestConvertToRubles(unittest.TestCase):
     @patch("src.external_api._get_exchange_rate", return_value=90.0)
     def test_usd_conversion(self, mock_get_rate):
         """Тест конвертации USD в рубли."""
-        transaction = {"amount": 10, "currency": "USD"}
+        transaction = {"operationAmount": {"amount": 10, "currency": {"name": "USD"}}}
         result = convert_to_rubles(transaction)
         self.assertAlmostEqual(result, 900.0)
         mock_get_rate.assert_called_once_with("USD")
@@ -22,34 +22,34 @@ class TestConvertToRubles(unittest.TestCase):
     @patch("src.external_api._get_exchange_rate", return_value=100.0)
     def test_eur_conversion(self, mock_get_rate):
         """Тест конвертации EUR в рубли."""
-        transaction = {"amount": 5, "currency": "EUR"}
+        transaction = {"operationAmount": {"amount": 5, "currency": {"name": "EUR"}}}
         result = convert_to_rubles(transaction)
         self.assertAlmostEqual(result, 500.0)
         mock_get_rate.assert_called_once_with("EUR")
 
     def test_rub_no_conversion(self):
         """Тест для валюты RUB — конвертация не требуется."""
-        transaction = {"amount": 1000, "currency": "RUB"}
+        transaction = {"operationAmount": {"amount": 1000, "currency": {"name": "RUB"}}}
         result = convert_to_rubles(transaction)
         self.assertEqual(result, 1000.0)
 
     def test_unsupported_currency(self):
         """Тест для неподдерживаемой валюты."""
-        transaction = {"amount": 100, "currency": "GBP"}
+        transaction = {"operationAmount": {"amount": 100, "currency": {"name": "GBP"}}}
         with self.assertRaises(ValueError) as context:
             convert_to_rubles(transaction)
         self.assertIn("Неподдерживаемая валюта", str(context.exception))
 
     def test_invalid_amount_type(self):
         """Тест для некорректного типа суммы."""
-        transaction = {"amount": "invalid", "currency": "USD"}
+        transaction = {"operationAmount": {"amount": "invalid", "currency": {"name": "USD"}}}
         with self.assertRaises(ValueError) as context:
             convert_to_rubles(transaction)
         self.assertIn("Некорректная сумма транзакции", str(context.exception))
 
     def test_negative_amount(self):
         """Тест для отрицательной суммы."""
-        transaction = {"amount": -100, "currency": "USD"}
+        transaction = {"operationAmount": {"amount": -100, "currency": {"name": "USD"}}}
         with self.assertRaises(ValueError) as context:
             convert_to_rubles(transaction)
         self.assertIn("Некорректная сумма транзакции", str(context.exception))
@@ -69,7 +69,7 @@ class TestConvertToRubles(unittest.TestCase):
         # Проверка параметров запроса
         mock_get.assert_called_once()
         args, kwargs = mock_get.call_args
-        self.assertIn("https://api.apilayer.com/exchangerates_data/convert", args[0])
+        self.assertIn("https://api.apilayer.com/exchangerates_data/convert", args)
         self.assertEqual(kwargs["params"]["from"], "USD")
         self.assertEqual(kwargs["params"]["to"], "RUB")
         self.assertEqual(kwargs["params"]["amount"], 1)
