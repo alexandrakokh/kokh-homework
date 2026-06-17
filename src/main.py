@@ -59,15 +59,15 @@ def main():
     # Выбор файла
     if choice == "1":
         file_type = "json"
-        file_path = "data/transactions.json"
+        file_path = "Домашка/data/transactions.json"
         print("Программа: Для обработки выбран JSON-файл.")
     elif choice == "2":
         file_type = "csv"
-        file_path = "data/transactions.csv"
+        file_path = "tests/data/transactions.csv"
         print("Программа: Для обработки выбран CSV-файл.")
     elif choice == "3":
         file_type = "xlsx"
-        file_path = "data/transactions_excel.xlsx"
+        file_path = "tests/data/transactions_excel.xlsx"
         print("Программа: Для обработки выбран XLSX-файл.")
     else:
         print("Программа: Неверный выбор пункта меню. Завершение работы.")
