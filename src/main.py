@@ -64,7 +64,7 @@ def format_transaction(transaction: Dict[str, Any]) -> str:
     if amount is not None:
         try:
             final_amount = float(amount)
-        except ValueError, TypeError:
+        except ValueError as TypeError:
             final_amount = 0
 
     # ВАЖНЫЙ МОМЕНТ: берем код валюты, а не название
