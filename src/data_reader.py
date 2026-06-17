@@ -14,13 +14,13 @@ def read_transactions_from_csv(file_path: str) -> List[Dict[str, Any]]:
     logger.info(f"Начинаем чтение CSV-файла: {file_path}")
     try:
         # 1. Читаем файл с явным указанием кодировки (часто спасает от ошибок)
-        df = pd.read_csv(file_path, encoding='utf-8', sep=';')
+        df = pd.read_csv(file_path, encoding="utf-8", sep=";")
 
         # 2. Очистка данных
         # Удаляем полностью пустые строки (где все значения NaN)
-        df = df.dropna(how='all')
+        df = df.dropna(how="all")
         # Заменяем NaN (пустые значения) на пустые строки '' для удобства
-        df = df.fillna('')
+        df = df.fillna("")
 
         # 3. Преобразуем в список словарей
         data: List[Dict[str, Any]] = df.to_dict(orient="records")
@@ -38,19 +38,6 @@ def read_transactions_from_csv(file_path: str) -> List[Dict[str, Any]]:
         logger.error(f"Ошибка при чтении CSV файла '{file_path}': {e}")
         return []
 
-#def read_transactions_from_csv(file_path: str) -> List[Dict[str, Any]]:
-#    logger.info(f"Начинаем чтение CSV-файла: {file_path}")
-#    try:
-#       df = pd.read_csv(file_path)
-#       data: List[Dict[str, Any]] = df.to_dict(orient="records")
-#        logger.info(f"Успешно прочитан CSV-файл. Найдено {len(data)} записей.")
-#        return data
-#    except FileNotFoundError:
-#        logger.error(f"Файл не найден: {file_path}")
-#       return []
-#    except Exception as e:
-#        logger.error(f"Ошибка при чтении CSV файла '{file_path}': {e}")
-#        return []
 
 def read_transactions_from_excel(file_path: str) -> List[Dict[str, Any]]:
     logger.info(f"Начинаем чтение Excel-файла: {file_path}")
@@ -70,7 +57,7 @@ def read_transactions_from_excel(file_path: str) -> List[Dict[str, Any]]:
 def read_transactions_from_json(file_path: str) -> List[Dict[str, Any]]:
     logger.info(f"Начинаем чтение JSON-файла: {file_path}")
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             data: List[Dict[str, Any]] = json.load(file)
             logger.info(f"Успешно прочитан JSON-файл. Найдено {len(data)} записей.")
             return data
@@ -97,9 +84,9 @@ def read_data(file_type: str, file_name: str) -> List[Dict[str, Any]]:
     file_path = data_dir / file_name  # Собираем полный путь
 
     handlers = {
-        'json': read_transactions_from_json,
-        'csv': read_transactions_from_csv,
-        'xlsx': read_transactions_from_excel
+        "json": read_transactions_from_json,
+        "csv": read_transactions_from_csv,
+        "xlsx": read_transactions_from_excel,
     }
 
     if file_type not in handlers:

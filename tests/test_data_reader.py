@@ -1,21 +1,19 @@
 from unittest.mock import Mock, patch
 import pytest
 import pandas as pd
-from src.data_reader import (
-    read_transactions_from_csv,
-    read_transactions_from_excel,
-    read_transactions_from_json
-)
+from src.data_reader import read_transactions_from_csv, read_transactions_from_excel, read_transactions_from_json
 
 
 # Отключаем логирование для чистоты вывода тестов
 @pytest.fixture(autouse=True)
 def disable_logging():
     import logging
+
     logging.disable(logging.CRITICAL)
 
 
 # --- Тесты для CSV ---
+
 
 @patch("src.data_reader.pd.read_csv")
 def test_read_csv_success(mock_read_csv):
@@ -26,10 +24,7 @@ def test_read_csv_success(mock_read_csv):
     """
     mock_df = Mock()
 
-    expected_data = [
-        {"id": 1, "amount": 100, "currency": "RUB"},
-        {"id": 2, "amount": 200, "currency": "USD"}
-    ]
+    expected_data = [{"id": 1, "amount": 100, "currency": "RUB"}, {"id": 2, "amount": 200, "currency": "USD"}]
 
     # 1. Настраиваем to_dict, чтобы он отдавал наши данные
     mock_df.to_dict.return_value = expected_data
@@ -87,13 +82,11 @@ def test_csv_invalid_data_error(mock_read_csv):
 
 # --- Тесты для Excel ---
 
+
 @patch("src.data_reader.pd.read_excel")
 def test_read_excel_success(mock_read_excel):
     mock_df = Mock()
-    expected_data = [
-        {"id": 3, "amount": 300, "currency": "EUR"},
-        {"id": 4, "amount": 400, "currency": "GBP"}
-    ]
+    expected_data = [{"id": 3, "amount": 300, "currency": "EUR"}, {"id": 4, "amount": 400, "currency": "GBP"}]
     mock_df.to_dict.return_value = expected_data
     mock_read_excel.return_value = mock_df
 
@@ -120,6 +113,7 @@ def test_read_excel_exception_handling(mock_read_excel):
 
 # --- Тесты для JSON ---
 
+
 def test_read_json_file_not_found():
     """Проверка отсутствия файла"""
     result = read_transactions_from_json("non_existent.json")
@@ -129,6 +123,7 @@ def test_read_json_file_not_found():
 def test_read_json_invalid_format():
     """Проверка невалидного JSON содержимого"""
     from unittest.mock import mock_open
+
     with patch("builtins.open", mock_open(read_data="{invalid_json}")):
         result = read_transactions_from_json("invalid.json")
         assert result == []
@@ -137,6 +132,7 @@ def test_read_json_invalid_format():
 def test_read_json_file_error():
     """Проверка ошибки открытия файла (IOError)"""
     from unittest.mock import patch
+
     with patch("builtins.open") as mock_open:
         mock_open.side_effect = IOError("File error")
         result = read_transactions_from_json("test.json")
@@ -146,6 +142,7 @@ def test_read_json_file_error():
 def test_read_json_permission_error():
     """Проверка ошибки прав доступа"""
     from unittest.mock import patch
+
     with patch("builtins.open") as mock_open:
         mock_open.side_effect = PermissionError("No permission")
         result = read_transactions_from_json("test.json")

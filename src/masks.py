@@ -106,7 +106,7 @@ def mask_account_card(value: str) -> str:
         if candidate.isdigit():
             digits_only = candidate
         else:
-            found = re.search(r'\d+', original_input)
+            found = re.search(r"\d+", original_input)
             digits_only = found.group() if found else ""
     elif len(parts) >= 2:
         prefix = parts[0]
@@ -114,10 +114,10 @@ def mask_account_card(value: str) -> str:
         if potential.isdigit():
             digits_only = potential
         else:
-            found = re.search(r'\d+', potential)
+            found = re.search(r"\d+", potential)
             if found:
                 digits_only = found.group()
-                if not re.match(r'^[A-Za-zA-Яа-я]+$', prefix):
+                if not re.match(r"^[A-Za-zA-Яа-я]+$", prefix):
                     prefix = ""
             else:
                 return original_input
@@ -129,7 +129,7 @@ def mask_account_card(value: str) -> str:
     prefix_lower = prefix.lower() if prefix else ""
 
     try:
-        is_card_prefix = prefix_lower in ['visa', 'mastercard', 'card', 'amex', 'discover']
+        is_card_prefix = prefix_lower in ["visa", "mastercard", "card", "amex", "discover"]
 
         # Логика карт: если есть префикс карты ИЛИ просто 16 цифр
         if is_card_prefix or digit_len == 16:
@@ -145,7 +145,7 @@ def mask_account_card(value: str) -> str:
         MIN_ACCOUNT_LEN = 10  # Минимальная длина для валидного счета
 
         if digit_len >= MIN_ACCOUNT_LEN:
-            is_account_prefix = prefix_lower in ['счет', 'account', 'acc', 'счёт', 'bank account']
+            is_account_prefix = prefix_lower in ["счет", "account", "acc", "счёт", "bank account"]
             masked = get_mask_account(digits_only)
             return f"{prefix} {masked}" if is_account_prefix else masked
 
@@ -157,4 +157,3 @@ def mask_account_card(value: str) -> str:
         # Если внутренняя функция выбросила ошибку валидации, возвращаем оригинал,
         # чтобы интерфейс mask_account_card не падал с исключением
         return original_input
-

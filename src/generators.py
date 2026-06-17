@@ -38,5 +38,5 @@ def card_number_generator(start, end):
         # Преобразуем число в строку и дополняем нулями слева до 16 цифр
         num_str = str(num).zfill(16)
         # Разбиваем строку на блоки по 4 символа и соединяем пробелами
-        formatted_card = " ".join([num_str[i: i + 4] for i in range(0, 16, 4)])
+        formatted_card = " ".join([num_str[i : i + 4] for i in range(0, 16, 4)])
         yield formatted_card

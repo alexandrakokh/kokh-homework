@@ -1,14 +1,10 @@
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict
 from pathlib import Path
 
 from src.masks import mask_account_card
 from src.data_reader import read_data
-from src.processing import (
-    process_bank_search,
-    filter_by_state,
-    sort_by_date
-)
+from src.processing import process_bank_search, filter_by_state, sort_by_date
 
 ALLOWED_STATUSES = {"EXECUTED", "CANCELED", "PENDING"}
 
@@ -19,15 +15,10 @@ def _parse_date(date_val: Any) -> str:
         return "Неизвестная дата"
 
     date_str = str(date_val).strip()
-    if date_str.endswith('Z'):
+    if date_str.endswith("Z"):
         date_str = date_str[:-1]
 
-    formats = [
-        "%Y-%m-%dT%H:%M:%S.%f",
-        "%Y-%m-%dT%H:%M:%S",
-        "%Y-%m-%d %H:%M:%S",
-        "%Y-%m-%d"
-    ]
+    formats = ["%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"]
 
     for fmt in formats:
         try:
@@ -73,7 +64,7 @@ def format_transaction(transaction: Dict[str, Any]) -> str:
     if amount is not None:
         try:
             final_amount = float(amount)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             final_amount = 0
 
     # ВАЖНЫЙ МОМЕНТ: берем код валюты, а не название
@@ -82,18 +73,13 @@ def format_transaction(transaction: Dict[str, Any]) -> str:
     if final_amount.is_integer():
         amount_str = f"Сумма: {int(final_amount)} {final_currency_code}"
     else:
-        formatted_val = f"{final_amount:.2f}".rstrip('0').rstrip('.')
+        formatted_val = f"{final_amount:.2f}".rstrip("0").rstrip(".")
         amount_str = f"Сумма: {formatted_val} {final_currency_code}"
 
     from_str = mask_account_card(from_raw) if from_raw else "Неизвестно"
     to_str = mask_account_card(to_raw) if to_raw else "Неизвестно"
 
-    lines = [
-        date_str,
-        f"Описание: {description}",
-        f"{from_str} -> {to_str}",
-        amount_str
-    ]
+    lines = [date_str, f"Описание: {description}", f"{from_str} -> {to_str}", amount_str]
 
     return "\n".join(lines)
 
@@ -137,9 +123,15 @@ def main():
         return
 
     while True:
-        status = input("Программа: Введите статус, по которому необходимо выполнить фильтрацию.\n"
-                       f"Доступные для фильтровки статусы: {', '.join(ALLOWED_STATUSES)}\n"
-                       "Пользователь: ").strip().upper()
+        status = (
+            input(
+                "Программа: Введите статус, по которому необходимо выполнить фильтрацию.\n"
+                f"Доступные для фильтровки статусы: {', '.join(ALLOWED_STATUSES)}\n"
+                "Пользователь: "
+            )
+            .strip()
+            .upper()
+        )
 
         if status in ALLOWED_STATUSES:
             data = filter_by_state(data, status)
@@ -148,15 +140,15 @@ def main():
         else:
             print(f'Программа: Статус операции "{status}" недоступен.')
 
-    sort_choice = input('Программа: Отсортировать операции по дате? Да/Нет\nПользователь: ').strip().lower()
-    if sort_choice in ['да', 'yes']:
-        order = input('Программа: Отсортировать по возрастанию или по убыванию?\nПользователь: ').strip().lower()
-        reverse = order in ['по убыванию', 'убывание']
+    sort_choice = input("Программа: Отсортировать операции по дате? Да/Нет\nПользователь: ").strip().lower()
+    if sort_choice in ["да", "yes"]:
+        order = input("Программа: Отсортировать по возрастанию или по убыванию?\nПользователь: ").strip().lower()
+        reverse = order in ["по убыванию", "убывание"]
         data = sort_by_date(data, reverse=reverse)
 
-    ruble_choice = input('Программа: Выводить только рублевые транзакции? Да/Нет\nПользователь: ').strip().lower()
+    ruble_choice = input("Программа: Выводить только рублевые транзакции? Да/Нет\nПользователь: ").strip().lower()
 
-    if ruble_choice in ['да', 'yes']:
+    if ruble_choice in ["да", "yes"]:
         filtered_data = []
         for op in data:
             currency_code = None
@@ -183,10 +175,12 @@ def main():
     else:
         print("Программа: Фильтр по валюте не применен.")
 
-    search_choice = input(
-        'Программа: Отфильтровать список транзакций по определенному слову в описании? Да/Нет\nПользователь: '
-    ).strip().lower()
-    if search_choice in ['да', 'yes']:
+    search_choice = (
+        input("Программа: Отфильтровать список транзакций по определенному слову в описании? Да/Нет\nПользователь: ")
+        .strip()
+        .lower()
+    )
+    if search_choice in ["да", "yes"]:
         search_term = input("Программа: Введите слово для поиска:\nПользователь: ").strip()
         data = process_bank_search(data, search_term)
 
@@ -201,6 +195,7 @@ def main():
             print()  # Пустая строка между транзакциями для читаемости
 
     print("Программа: Завершение работы.")
+
 
 if __name__ == "__main__":
     main()

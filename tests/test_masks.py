@@ -85,7 +85,9 @@ class TestMaskAccountCard:
             assert not result.startswith(" "), f"Лишний пробел в начале: {result}"
 
         match = re.search(expected_suffix_pattern, result)
-        assert match, f"Неверный результат маскирования. Ожидался паттерн {expected_suffix_pattern}, получено: {result}"
+        assert (
+            match
+        ), f"Неверный результат маскирования. Ожидался паттерн {expected_suffix_pattern}, получено: {result}"
 
     def test_empty_or_none_input(self):
         """Проверка обработки пустых значений и None."""
@@ -120,5 +122,3 @@ class TestMaskAccountCard:
         assert result.startswith("Card "), "Префикс 'Card' должен сохраниться"
         # Убедимся, что пробелы внутри номера исчезли в маске
         assert " " not in result.split()[1], "В замаскированной части не должно быть пробелов"
-
-
