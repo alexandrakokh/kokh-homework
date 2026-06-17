@@ -29,25 +29,35 @@ pip install -r requirements.txt
 
 ## Тестирование
 
-1. src\__init__.py   100%
-2. src\decorators.py 100%
-3. src\generators.py  93%
-4. src\masks.py      100%
-5. src\processing.py  89%
-6. src\widget.py      93%
-7. srс\utils.py	 	  79%
-8. srс\external_api.py 93%
-9. src\data_reader.py 70%
-10. tests\conftest.py  79% 
-11. tests\test_decorators.py 97% 
-12. tests\test_generators.py 100% 
-13. tests\test_masks.py 100% 
-14. tests\test_processing.py 100% 
-15. tests\test_widget.py  100% 
-16. tests\test_utils.py	  100% 
-17. tests\test_external_api.py	 100% 
-18. tests\test_data_reader.py  95%
-## TOTAL  95%
+1. src\__init__.py  100%
+2. src\analysis.py  100%
+3. src\data_reader.py  81%
+4. src\decorators.py  100%
+5. src\external_api.py  87%
+6. src\generators.py   93%
+7. src\logging_config.py  93%
+8. src\main.py   72%
+9. src\masks.py  87%
+10. src\processing.py  72%
+11. src\search.py  100%
+12. src\utils.py  76%
+13. src\widget.py 93%
+14. tests\__init__.py  100%
+15. tests\conftest.py  77%
+16. tests\test_analysis.py  100%
+17. tests\test_data_reader.py 100%
+18. tests\test_decorators.py   97%
+19. tests\test_external_api.py   100%
+20. tests\test_generators.py  100%
+21. tests\test_main.py  100%
+22. tests\test_masks.py   100%
+23. tests\test_processing.py 100%
+24. tests\test_search.py  100%
+25. tests\test_utils.py  100%
+26. tests\test_widget.py   100%
+------------------------------------------------
+TOTAL     92%
+
 
 
 
