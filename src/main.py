@@ -1,48 +1,114 @@
 from datetime import datetime
-from src.masks import get_mask_card_number
+from typing import Any, Dict
+from src.masks import mask_account_card
 from src.data_reader import read_data
 from src.processing import (
     process_bank_search,
     filter_by_state,
     sort_by_date
 )
-from typing import List, Dict
 
 ALLOWED_STATUSES = {"EXECUTED", "CANCELED", "PENDING"}
 
 
-def format_transaction(op: Dict) -> str:
-    """Форматирует одну транзакцию для вывода (с маской и датой)."""
+def _parse_date(date_val: Any) -> str:
+    """Парсит дату в формат ДД.ММ.ГГГГ или возвращает заглушку."""
+    if date_val is None:
+        return "Неизвестная дата"
 
-    # 1. Формируем дату
-    date_iso = op.get("date")
-    try:
-        parsed_date = datetime.fromisoformat(date_iso)
-        date_formatted = parsed_date.strftime("%d.%m.%Y")
-    except (ValueError, TypeError):
-        date_formatted = "Неизвестная дата"
+    date_str = str(date_val)
+    formats = [
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d"
+    ]
+
+    for fmt in formats:
+        try:
+            dt = datetime.strptime(date_str, fmt)
+            return dt.strftime("%d.%m.%Y")
+        except ValueError:
+            continue
+
+    return "Неизвестная дата"
+
+
+def _get_currency_name(currency_val: Any) -> str:
+    """Извлекает название валюты. Дефолт - RUB."""
+    if not currency_val:
+        return "RUB"
+
+    if isinstance(currency_val, str):
+        return currency_val
+
+    if isinstance(currency_val, dict):
+        # Пробуем взять по ключу 'name' (как в тестах) или 'code'
+        val = currency_val.get("name") or currency_val.get("code")
+        return val if val else "RUB"
+
+    return str(currency_val)
+
+
+def format_transaction(transaction: Dict[str, Any]) -> str:
+    # 1. Дата
+    raw_date = transaction.get("date")
+    date_str = _parse_date(raw_date)
 
     # 2. Описание
-    desc = op.get("description", "Неизвестно")
+    description = transaction.get("description")
+    if description is None:
+        description = "Без описания"
+    else:
+        description = str(description)
 
-    # 3. Маскируем номера
-    from_number = op.get("from")
-    to_number = op.get("to")
+    # 3. Источник данных (верхний уровень или operationAmount)
+    source = transaction
+    if "operationAmount" in transaction and isinstance(transaction["operationAmount"], dict):
+        source = transaction["operationAmount"]
 
-    from_masked = get_mask_card_number(from_number) if from_number else "Неизвестно"
-    to_masked = get_mask_card_number(to_number) if to_number else "Неизвестно"
+    amount = source.get("amount")
+    currency_raw = source.get("currency")
+    from_raw = source.get("from")
+    to_raw = source.get("to")
 
-    # 4. Сумма и валюта
-    amount = op.get("amount", 0)
-    currency = op.get("currency", {}).get("name", "RUB")
+    # --- ИСПРАВЛЕНИЕ ЛОГИКИ СУММЫ И ВАЛЮТЫ ---
+    # Если amount нет или None -> ставим 0. Если currency нет -> RUB.
+    # Это нужно, чтобы тесты проходили assert "Сумма: 0 RUB"
+    final_amount = 0
+    if amount is not None:
+        try:
+            final_amount = float(amount)
+        except (ValueError, TypeError):
+            final_amount = 0
 
-    # 5. Собираем итоговую строку
-    result = (
-        f"{date_formatted} {desc}\n"
-        f"{from_masked} -> {to_masked}\n"
-        f"Сумма: {amount} {currency}"
-    )
-    return result
+    final_currency = _get_currency_name(currency_raw)
+
+    # Форматируем сумму:
+    # - Если число целое (например 250.0), пишем как int (250)
+    # - Если дробное, оставляем 1 знак после запятой, если второй ноль, иначе 2 знака?
+    #   Судя по ошибке теста "250.5", нам нужно убрать лишний ноль.
+
+    if final_amount.is_integer():
+        amount_str = f"Сумма: {int(final_amount)} {final_currency}"
+    else:
+        # Форматируем так, чтобы убрать лишний ноль в конце, если он есть
+        # Например: 250.50 -> 250.5, 250.25 -> 250.25
+        formatted_val = f"{final_amount:.2f}".rstrip('0').rstrip('.')
+        amount_str = f"Сумма: {formatted_val} {final_currency}"
+
+    # 4. Отправитель и получатель (с маскированием)
+    from_str = mask_account_card(from_raw) if from_raw is not None else "Неизвестно"
+    to_str = mask_account_card(to_raw) if to_raw is not None else "Неизвестно"
+
+    # Сборка результата
+    lines = [
+        date_str,
+        f"Описание: {description}",
+        f"{from_str} -> {to_str}",
+        amount_str
+    ]
+
+    return "\n".join(lines)
 
 
 def main():
@@ -73,16 +139,14 @@ def main():
         print("Программа: Неверный выбор пункта меню. Завершение работы.")
         return
 
-    # 1. Загрузка данных (используем ваш data_reader)
+    # 1. Загрузка данных
     data = read_data(file_type, file_path)
 
-    # ПРОВЕРКА НА ОШИБКУ ЗАГРУЗКИ (None)
-    # Если read_data вернула None — печатаем ошибку и завершаем работу
     if data is None:
         print("Программа: Не удалось загрузить данные. Завершение работы.")
         return
 
-    # 2. Фильтрация по статусу (используем filter_by_state из processing.py)
+    # 2. Фильтрация по статусу
     while True:
         status = input("Программа: Введите статус, по которому необходимо выполнить фильтрацию.\n"
                        f"Доступные для фильтровки статусы: {', '.join(ALLOWED_STATUSES)}\n"
@@ -95,7 +159,7 @@ def main():
         else:
             print(f'Программа: Статус операции "{status}" недоступен.')
 
-    # 3. Сортировка (используем sort_by_date из processing.py)
+    # 3. Сортировка
     sort_choice = input('Программа: Отсортировать операции по дате? Да/Нет\nПользователь: ').strip().lower()
     if sort_choice in ['да', 'yes']:
         order = input('Программа: Отсортировать по возрастанию или по убыванию?\nПользователь: ').strip().lower()
@@ -108,13 +172,12 @@ def main():
         filtered_data = []
         for op in data:
             currency_info = op.get("currency", {})
-            # Проверяем, есть ли ключ 'code' и равен ли он 'RUB'
             if isinstance(currency_info, dict) and currency_info.get("code") == "RUB":
                 filtered_data.append(op)
         data = filtered_data
         print("Программа: Отфильтрованы только рублевые операции.")
 
-    # 5. Поиск по описанию (используем process_bank_search из processing.py)
+    # 5. Поиск по описанию
     search_choice = input(
         'Программа: Отфильтровать список транзакций по определенному слову в описании? Да/Нет\nПользователь: '
     ).strip().lower()
@@ -125,14 +188,13 @@ def main():
     # 6. Вывод
     print("\nПрограмма: Распечатываю итоговый список транзакций...")
 
-    # ПРОВЕРКА НА ПУСТОЙ СПИСОК (данные загружены успешно, но список пуст)
     if not data:
         print("Программа: Не найдено ни одной транзакции, подходящей под ваши условия фильтрации")
     else:
         print(f"\nВсего банковских операций в выборке: {len(data)}")
         for op in data:
             print(format_transaction(op))
-            print()  # Пустая строка между операциями
+            print()
 
 
 if __name__ == "__main__":
